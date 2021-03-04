@@ -1,0 +1,14 @@
+site/
+.coverage
+.tox/
+dist/
+*.egg-info
+__pycache__
+.pytest_cache/
+.vscode/
+*.pyc
+build/
+.idea/
+docs/_build/
+docs/_static/
+docs/_templates/
