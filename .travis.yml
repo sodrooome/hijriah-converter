@@ -6,6 +6,8 @@ python:
 install:
   - pip3 install codecov
   - pip3 install pytest
-script: pytest tests/ 
+  - pip3 install pytest-cov
+  - pip3 install coveralls
+script: pytest --cov=tests/ 
 after_success:
-  - codecov
+  - coveralls

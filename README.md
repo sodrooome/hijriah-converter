@@ -1,5 +1,7 @@
 ## Hijriah Date Converter
 
+[![Build Status](https://travis-ci.com/sodrooome/hijriah-converter.svg?token=rHmyG6UiRrnXStqxuNMc&branch=master)](https://travis-ci.com/sodrooome/hijriah-converter)
+
 A package to convert between Hijri and Gregorian calendar date using the Umm al-Qura calendar.
 
 #### Installation
