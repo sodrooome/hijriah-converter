@@ -4,8 +4,8 @@ python:
   - '3.7'
   - '3.8'
 install:
-  - pip install -q -e .
-  - pip install -q pytest-cov codecov
-script: pytest tests/ --cov
+  - pip3 install codecov
+  - pip3 install pytest
+script: pytest tests/ 
 after_success:
   - codecov

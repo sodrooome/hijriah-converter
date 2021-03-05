@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = '0.1.0'
 
 
 def get_version():
@@ -6,4 +6,4 @@ def get_version():
 
 
 def get_version_as_tuple():
-    return tuple(map(int, __version__.split(".")))
+    return tuple(map(int, __version__.split('.')))
