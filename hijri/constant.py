@@ -1,6 +1,23 @@
 """Range of valid Hijri dates."""
 hijri_range = (1343, 1, 1), (1500, 12, 30)
 
+"""List of Hijri month names."""
+hijri_month = (
+    "",
+    "Muharram",
+    "Safar",
+    "Rabiul Awwal",
+    "Rabiul Tsani",
+    "Jumadil Ula",
+    "Jumadil Tsani",
+    "Rajab",
+    "Sya'ban",
+    "Ramadhan",
+    "Syawwal",
+    "Dzul Qa'dah",
+    "Dzul Hijjah",
+)
+
 
 """
 References:
