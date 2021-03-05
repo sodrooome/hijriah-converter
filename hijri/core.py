@@ -1,5 +1,5 @@
 import datetime, math
-from constant import ummalqura, hijri_range
+from hijri.constant import ummalqura, hijri_range, hijri_month
 
 
 class Hijriah(object):
@@ -10,6 +10,33 @@ class Hijriah(object):
 
     def __str__(self):
         return f"{self.day}/{self.month}/{self.year}"
+
+    @classmethod
+    def to_representation(cls, day, month, year, date_format):
+        """Class method for represent formatted date
+        
+        TODO: for future release, using standard ISO 8601 string
+        """
+        _year = int(year)
+        _month = int(month)
+        _day = int(day)
+
+        if date_format == "ISO":
+            return cls(_year, _month, _day)
+        elif date_format == "DMY":
+            return cls(_day, _month, _year)
+        elif date_format == "ISO-8601":
+            pass
+        else:
+            raise Exception("Unknown formatter date")
+
+    def get_hijri_month(self):
+        """Method for formatted both calendar and returned as
+        month name based on Hijriah calendar.
+
+        Temporary, i'm using tricky way for get the month attributes
+        """
+        return hijri_month[self.month]
 
     def to_hijri(self):
         """Function for converting gregorian calendar day,
@@ -111,8 +138,7 @@ class Hijriah(object):
 
 
 # example only, probably split into another modules
-test = Hijriah(23, 2, 2021).to_hijri()
-print(test)
-
-test2 = Hijriah(1403, 2, 17).to_gregorian()
-print(test2)
+test = Hijriah
+print(test.to_representation(21, 2, 2020, "DMY"))
+print(test.to_representation(21, 1, 2021, "ISO").get_hijri_month())
+print(test(21, 2, 2009).get_hijri_month())
