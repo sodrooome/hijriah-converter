@@ -48,6 +48,9 @@ class Hijriah(object):
         _month = int(self.month)
         _year = int(self.year)
 
+        # validation for inputted date from gregorian calendar
+        self.validate_gregorian_range()
+
         # offset and limit between gregorian and julien calendar
         offset = math.floor(_year / 100.0)
         julien_gregorian = offset - math.floor(offset / 4.0) - 2
@@ -125,20 +128,24 @@ class Hijriah(object):
             raise Exception("Unknown exception for this calendar")
 
     def validate_hijri_range(self):
-        min_date, max_date = hijri_range
-        if min_date < (self.day, self.month, self.year):
-            raise OverflowError("Date out of range (below Hijriah date range)")
-        elif max_date > (self.day, self.month, self.year):
-            raise OverflowError("Date out of range (more than Hijriah date range)")
+        offset_date = (1343, 1, 1)
+        limit_date = (1500, 12, 30)
+        check_date = (self.day, self.month, self.year)
+        if offset_date <= check_date <= limit_date:
+            pass
         else:
-            raise Exception("Unknown exception for this date range")
+            raise OverflowError("Hijriah date out of range / bounds")
 
     def validate_gregorian_range(self):
-        pass
+        offset_date = (1, 1, 1900)
+        limit_date = (31, 12, 2100)
+        check_Date = (self.day, self.month, self.year)
+        if not offset_date <= check_Date <= limit_date:
+            raise OverflowError("Gregorian calendar date out of range / bounds")
 
 
 # example only, probably split into another modules
 test = Hijriah
-print(test.to_representation(21, 2, 2020, "DMY"))
+print(test.to_representation(1, 1, 1945, "DMY").to_hijri())
 print(test.to_representation(21, 1, 2021, "ISO").get_hijri_month())
 print(test(21, 2, 2009).get_hijri_month())
