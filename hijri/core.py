@@ -42,7 +42,8 @@ class Hijriah(object):
         """Function for converting gregorian calendar day,
         to Hijriah calendar day.
 
-        TODO: fix the returned values (still zero)
+        TODO: fix the returned values, the result still exceeds
+        the current hijriah date (3 years for now)
         """
         _day = int(self.day)
         _month = int(self.month)
@@ -58,7 +59,7 @@ class Hijriah(object):
         # calculate julien calendar day number
         # see at: https://en.wikipedia.org/wiki/Julian_calendar
         julien_calendar_day = (
-            math.floor(365.25 * (_year + 4176))
+            math.floor(365.25 * (_year + 4716))
             + math.floor(30.6001 * (_month + 1))
             + _day
             - julien_gregorian
@@ -70,18 +71,18 @@ class Hijriah(object):
         # and indexing the lunation of Umm al-Qura calendar
         modified_julien = julien_calendar_day - 2400000
         for key, value in enumerate(ummalqura):
-            if key > modified_julien:
-                return key
+            if value > modified_julien:
+                break
         # lunation = ummalqura[modified_julien]
 
         # calculate the Umm al-Qura calendar
         index = key + 16260
         in_one_year = math.floor((index - 1) / 12)
         in_year = in_one_year + 1
-        in_month = in_year - 12 * in_one_year
-        in_day = modified_julien - ummalqura[index - 1] + 1
-        result = ummalqura[index] - ummalqura[index - 1]
-        return Hijriah(in_day, in_month, in_year)
+        in_month = index - 12 * in_one_year
+        in_day = modified_julien - ummalqura[key - 1] + 1
+        result = ummalqura[key] - ummalqura[key - 1]
+        return Hijriah(in_year, in_month, in_day)
 
     def to_gregorian(self):
         """Function for converting hijriah calendar day,
@@ -142,10 +143,3 @@ class Hijriah(object):
         check_Date = (self.day, self.month, self.year)
         if not offset_date <= check_Date <= limit_date:
             raise OverflowError("Gregorian calendar date out of range / bounds")
-
-
-# example only, probably split into another modules
-test = Hijriah
-print(test.to_representation(1, 1, 1945, "DMY").to_hijri())
-print(test.to_representation(21, 1, 2021, "ISO").get_hijri_month())
-print(test(21, 2, 2009).get_hijri_month())
