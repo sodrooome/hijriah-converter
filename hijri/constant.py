@@ -1,4 +1,5 @@
 """Range of valid Hijri dates."""
+
 hijri_range = (1343, 1, 1), (1500, 12, 30)
 
 """List of Hijri month names."""
