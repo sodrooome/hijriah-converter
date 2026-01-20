@@ -1,23 +1,21 @@
-from dateutil import parser
+from dateutil import parser as date_parser
 
 
 def parser(*args, **kwargs):
-    date_object = parser.parse(*args, **kwargs)
-    return date_object
+    return date_parser.parse(*args, **kwargs)
 
 
-@classmethod
 def to_representation(date_object, date_format):
-    """Method for represents ISO format."""
-    format = None
-    if format == "ISO":
-        format = "%Y-%m-%dT%H:%M:%SZ"
-    elif format == "DMY":
-        format = "%d-%m-%Y"
+    """Method for represents ISO format"""
+    if date_format == "ISO":
+        fmt = "%Y-%m-%dT%H:%M:%SZ"
+    elif date_format == "DMY":
+        fmt = "%d-%m-%Y"
     else:
-        format = "%Y-%m-%d %H:%M:%S"
-    return date_object.strftime(object)
+        fmt = "%Y-%m-%d %H:%M:%S"
+    return date_object.strftime(fmt)
 
 
-def formatted_date(date_object, date_format):
-    return to_representation(parser(date_object))
+def formatted_date(date_string, date_format):
+    date_object = parser(date_string)
+    return to_representation(date_object, date_format)

@@ -1,0 +1,27 @@
+# Release History
+
+## v0.1.0 - March 4, 2021
+-------------------------
+
+- Added to_hijri() and to_gregorian() method
+- Custom validation for input date
+- Method for represent hijriah date into string formatted
+
+## v0.2.0 - March 10, 2021
+--------------------------
+
+- Fixed to_hijri() method able to convert from gregorian calendar date
+- Fixed validation inputted date for both calendar
+- Fixed offset and limit range for both calendar
+
+## v0.3.0 - January 20, 2026
+----------------------------
+
+- Fixed wrong parameter order and broken ISO format
+- Fixed returned to_hijri() date is off by years due to the inverted logic
+- Fixed validate_calendar() method always raises an exception
+- Fixed tuple bug comparison during date validation for gregorian
+- Fixed invalid decorator usage and broken imported module
+- Added error prevention if month is out of range (unsafe indexing)
+- Added silent error prevention after hijriah date conversion
+

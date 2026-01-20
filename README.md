@@ -1,6 +1,6 @@
 ## Hijriah Date Converter
 
-[![Build Status](https://travis-ci.com/sodrooome/hijriah-converter.svg?token=rHmyG6UiRrnXStqxuNMc&branch=master)](https://travis-ci.com/sodrooome/hijriah-converter) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hijri-calendar)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/hijri-calendar?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/hijri-calendar)
 
 A package to convert between Hijri and Gregorian calendar date using the Umm al-Qura calendar.
 
@@ -10,7 +10,7 @@ A package to convert between Hijri and Gregorian calendar date using the Umm al-
 
 #### Features
 
-- (Probably) supported ISO and another extendable date format
+- Supported ISO and another extendable date format
 - Representation to string with formatted name of the month based on hijriah calendar
 - Offset and limit range for both calendar
 
@@ -22,19 +22,25 @@ The usage itself is quite straightforward, just inputted the gregorian or hijri 
 from hijri.core import Hijriah
 
 # convert gregorian calendary day into hijriah
->>> gregorian = Hijriah(23, 3, 2021)
+>>> gregorian = Hijriah(day=21, month=12, year=2025)
 >>> print(gregorian.to_hijri())
-'1455/8/1'
+'1/7/1460'
 
-# getting hijri based month for both calendar
->>> example = Hijriah(21, 2, 2009).get_hijri_month()
->>> print(example)
-'Safar'
+# getting hijri month based on the gregorian calendar
+>>> gregorian = Hijriah(day=21, month=12, year=2025)
+>>> get_month = gregorian.get_hijri_month()
+>>> print(get_month)
+'Dzul Hijjah'
 
-# converting into ISO format
->>> example = Hijriah.to_representation(21, 2, 2009, "ISO")
->>> print(example)
-'2009/21/2'
+# converting into common ISO format
+>>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO")
+>>> print(get_iso)
+'21/12/21'
+
+# converting into more standard version of ISO
+>>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO-8601")
+>>> print(get_iso)
+'2024-12-21'
 ```
 
 For further usage, please refer the `example.py` file
