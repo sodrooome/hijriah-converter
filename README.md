@@ -1,6 +1,6 @@
 ## Hijriah Date Converter
 
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/hijri-calendar?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/hijri-calendar)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/hijri-calendar?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=BLUE&left_text=downloads)](https://pepy.tech/projects/hijri-calendar) [![codecov](https://codecov.io/gh/sodrooome/hijriah-converter/graph/badge.svg?token=6SHZWUEMRS)](https://codecov.io/gh/sodrooome/hijriah-converter)
 
 A package to convert between Hijri and Gregorian calendar date using the Umm al-Qura calendar.
 
