@@ -39,10 +39,8 @@ class Hijriah:
 
     def to_hijri(self):
         """Function for converting gregorian calendar day,
-        to Hijriah calendar day.
-
-        TODO: fix the returned values, the result still exceeds
-        the current hijriah date (3 years for now)
+        to Hijriah calendar day. It's based on the Umm al-Qura calendar
+        dataset, which is the official calendar used in Saudi Arabia
         """
         _day = int(self.day)
         _month = int(self.month)
@@ -51,35 +49,57 @@ class Hijriah:
         # validation for inputted date from gregorian calendar
         self.validate_gregorian_range()
 
-        # offset and limit between gregorian and julien calendar
-        offset = math.floor(_year / 100.0)
-        julien_gregorian = offset - math.floor(offset / 4.0) - 2
-
         # calculate julien calendar day number
         # see at: https://en.wikipedia.org/wiki/Julian_calendar
+        # for January and February, month must be treated as 13 and 14
+        # otherwise, the conversion result is off by years
+        if _month <= 2:
+            _year -= 1
+            _month += 12
+
+        # calculates the century number for the given year
+        # and adjust for how the Gregorian calendar modifies the leap year rules
+        # every 4 years = leap, except every 100 years = not leap, except every 400 years = leap
+        century = _year // 100
+        leap_years = 2 - century + (century // 4)
+
         julien_calendar_day = (
             math.floor(365.25 * (_year + 4716))
             + math.floor(30.6001 * (_month + 1))
             + _day
-            - julien_gregorian
+            + leap_years
             - 1524
         )
 
+        modified_julien = math.floor(julien_calendar_day)
+        reduced_julien_day = modified_julien - 2400000
+
+        # find lunation index for the given julien calendar day
         # calculate modified julien calendar day
         # and indexing the lunation of Umm al-Qura calendar
-        modified_julien = julien_calendar_day - 2400000
-        for key, value in enumerate(ummalqura):
-            if value > modified_julien:
+        key = None
+        for index, value in enumerate(ummalqura):
+            if value > reduced_julien_day:
+                key = index
                 break
-        # lunation = ummalqura[modified_julien]
+
+        if key is None:
+            raise ValueError("Date is out of range for calendar conversion")
+
+        # guard the result if it's equal to 0 which indexed
+        # last element of array
+        if key == 0:
+            raise ValueError("Date before supported range for calendar conversion")
 
         # calculate the Umm al-Qura calendar
-        index = key + 16260
-        in_one_year = math.floor((index - 1) / 12)
-        in_year = in_one_year + 1
-        in_month = index - 12 * in_one_year
-        in_day = modified_julien - ummalqura[key - 1] + 1
-        result = Hijriah(in_day, in_month, in_year)
+        month_index = key - 1
+
+        # total months since 1 Muharram 1343 AH (starting point from this lbirary)
+        total_months = month_index
+        hijri_year = 1343 + (total_months // 12)
+        hijri_month = (total_months % 12) + 1
+        hijri_day = reduced_julien_day - ummalqura[month_index] + 1
+        result = Hijriah(day=hijri_day, month=hijri_month, year=hijri_year)
 
         # validate the resulting hijri date to prevent
         # silent OverflowErrorw when date is exceeded
@@ -137,9 +157,7 @@ class Hijriah:
         offset_date = (1343, 1, 1)
         limit_date = (1500, 12, 30)
         check_date = (self.year, self.month, self.day)
-        if offset_date <= check_date <= limit_date:
-            pass
-        else:
+        if not offset_date <= check_date <= limit_date:
             raise OverflowError("Hijriah date out of range / bounds")
 
     def validate_gregorian_range(self):

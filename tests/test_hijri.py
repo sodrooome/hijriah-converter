@@ -1,5 +1,7 @@
 import unittest
 from hijri.core import Hijriah
+from hijri import core as core_module
+from unittest import mock
 
 
 class TestHijriCalendar(unittest.TestCase):
@@ -100,6 +102,45 @@ class TestHijriCalendar(unittest.TestCase):
         self.assertTrue(1 <= result.day <= 30)
         self.assertTrue(1 <= result.month <= 12)
         self.assertTrue(1343 <= result.year <= 1500)
+
+    def test_to_hijri_month_adjustment(self):
+        """Test gregorian to hijri conversion for January/February months
+        which should trigger the internal month/year adjustment
+        (_month <= 2 branch)"""
+        # Choose a date in January within supported range
+        hijri = Hijriah(15, 1, 2012)
+        result = hijri.to_hijri()
+        self.assertIsInstance(result, Hijriah)
+        # Basic sanity checks on the converted Hijri date
+        self.assertTrue(1 <= result.day <= 30)
+        self.assertTrue(1 <= result.month <= 12)
+        self.assertTrue(1343 <= result.year <= 1500)
+
+    def test_to_hijri_before_supported_range_raises(self):
+        """Trigger the key == 0 branch which should raise for dates
+        before the supported Umm al-Qura range"""
+
+        # 1900-01-01 is within validate_gregorian_range but expected
+        # to map before ummalqura[0], triggering the specific ValueError.
+        hijri = Hijriah(1, 1, 1900)
+        with self.assertRaises(ValueError) as cm:
+            hijri.to_hijri()
+        self.assertIn("Date before supported range", str(cm.exception))
+
+    def test_to_hijri_out_of_range_raises(self):
+        """Force a 'no lunation found' scenario (key is None) by
+        temporarily shrinking the `ummalqura` table so the date is out
+        of range and ensures the correct ValueError is raised"""
+        
+        # Patch the ummalqura table to small values so any realistic
+        # reduced_julien_day will be larger and produce key == None
+        with mock.patch.object(core_module, "ummalqura", (1, 2, 3)):
+            hijri = Hijriah(1, 1, 2000)
+            with self.assertRaises(ValueError) as cm:
+                hijri.to_hijri()
+            self.assertIn(
+                "Date is out of range for calendar conversion", str(cm.exception)
+            )
 
 
 if __name__ == "__main__":

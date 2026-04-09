@@ -24,13 +24,13 @@ from hijri.core import Hijriah
 # convert gregorian calendary day into hijriah
 >>> gregorian = Hijriah(day=21, month=12, year=2025)
 >>> print(gregorian.to_hijri())
-'1/7/1460'
+'1/7/1447'
 
 # getting hijri month based on the gregorian calendar
 >>> gregorian = Hijriah(day=21, month=12, year=2025)
 >>> get_month = gregorian.get_hijri_month()
 >>> print(get_month)
-'Dzul Hijjah'
+'Safar'
 
 # converting into common ISO format
 >>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO")
