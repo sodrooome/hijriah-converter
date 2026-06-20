@@ -1,6 +1,7 @@
 import unittest
 from hijri.core import Hijriah
 from hijri import core as core_module
+from hijri.errors import HijriRangeError, HijriDateError
 from unittest import mock
 
 
@@ -77,7 +78,7 @@ class TestHijriCalendar(unittest.TestCase):
     def test_validate_gregorian_range_out_of_bounds(self):
         """Test validate_gregorian_range with out of bounds date"""
         hijri_invalid = Hijriah(1, 1, 1800)
-        with self.assertRaises(OverflowError):
+        with self.assertRaises(HijriRangeError):
             hijri_invalid.validate_gregorian_range()
 
     def test_validate_hijri_range_valid(self):
@@ -89,7 +90,7 @@ class TestHijriCalendar(unittest.TestCase):
     def test_validate_hijri_range_out_of_bounds(self):
         """Test validate_hijri_range with out of bounds date"""
         hijri_invalid = Hijriah(1, 1, 1600)
-        with self.assertRaises(OverflowError):
+        with self.assertRaises(HijriRangeError):
             hijri_invalid.validate_hijri_range()
 
     def test_to_hijri_conversion(self):
@@ -131,7 +132,7 @@ class TestHijriCalendar(unittest.TestCase):
         """Force a 'no lunation found' scenario (key is None) by
         temporarily shrinking the `ummalqura` table so the date is out
         of range and ensures the correct ValueError is raised"""
-        
+
         # Patch the ummalqura table to small values so any realistic
         # reduced_julien_day will be larger and produce key == None
         with mock.patch.object(core_module, "ummalqura", (1, 2, 3)):
@@ -141,6 +142,37 @@ class TestHijriCalendar(unittest.TestCase):
             self.assertIn(
                 "Date is out of range for calendar conversion", str(cm.exception)
             )
+
+    def test_to_gregorian_conversion(self):
+        """Test to_gregorian returns a Hijriah instance"""
+        hijri = Hijriah(1, 1, 1356)
+        result = hijri.to_gregorian()
+        self.assertIsInstance(result, Hijriah)
+
+    def test_to_gregorian_round_trip(self):
+        """Test gregorian -> hijri -> gregorian returns a Hijriah instance"""
+        hijri = Hijriah(21, 12, 2012)
+        hijri_result = hijri.to_hijri()
+        greg_result = hijri_result.to_gregorian()
+        self.assertIsInstance(greg_result, Hijriah)
+
+    def test_to_gregorian_invalid_calendar(self):
+        """Test to_gregorian with empty day raises HijriDateError"""
+        hijri_invalid = Hijriah("", 1, 1356)
+        with self.assertRaises(ValueError):
+            hijri_invalid.to_gregorian()
+
+    def test_julian_to_gregorian_returns_hijriah(self):
+        """Test _julian_to_gregorian returns a Hijriah instance"""
+        result = Hijriah._julian_to_gregorian(2451677)
+        self.assertIsInstance(result, Hijriah)
+
+    def test_julian_to_gregorian_has_date_attributes(self):
+        """Test _julian_to_gregorian result has day, month, year"""
+        result = Hijriah._julian_to_gregorian(2451677)
+        self.assertTrue(hasattr(result, "day"))
+        self.assertTrue(hasattr(result, "month"))
+        self.assertTrue(hasattr(result, "year"))
 
 
 if __name__ == "__main__":
