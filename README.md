@@ -16,34 +16,41 @@ A package to convert between Hijri and Gregorian calendar date using the Umm al-
 
 #### Usage
 
-The usage itself is quite straightforward, just inputted the gregorian or hijri version of the calendar with something like:
+The usage itself is quite straightforward, just input the gregorian or hijri version of the calendar with something like:
 
 ```python
 from hijri.core import Hijriah
 
-# convert gregorian calendary day into hijriah
+# convert gregorian calendar day into hijriah
 >>> gregorian = Hijriah(day=21, month=12, year=2025)
 >>> print(gregorian.to_hijri())
-'1/7/1447'
+1/7/1447
 
-# getting hijri month based on the gregorian calendar
->>> gregorian = Hijriah(day=21, month=12, year=2025)
->>> get_month = gregorian.get_hijri_month()
->>> print(get_month)
-'Safar'
+# get the hijri month name from the month number
+>>> hijri = Hijriah(day=21, month=12, year=2025)
+>>> print(hijri.get_hijri_month())
+Dzul Hijjah
 
-# converting into common ISO format
+# convert into standard ISO date format (returns Hijriah object)
 >>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO")
 >>> print(get_iso)
-'21/12/21'
+21/12/2024
 
-# converting into more standard version of ISO
+# convert into ISO-8601 string format
 >>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO-8601")
 >>> print(get_iso)
-'2024-12-21'
+2024-12-21
+
+# convert into DMY format (returns Hijriah object)
+>>> get_dmy = Hijriah.to_representation(day=11, month=9, year=2025, date_format="DMY")
+>>> print(get_dmy)
+11/9/2025
 ```
 
-For further usage, please refer the `example.py` file
+For further usage, please refer to the `example.py` file
+
+> [!WARNING]
+> The `to_gregorian()` method (converting Hijri to Gregorian) is still a work in progress and may return incorrect results.
 
 #### Acknowledgment
 
