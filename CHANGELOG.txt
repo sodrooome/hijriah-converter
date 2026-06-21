@@ -25,3 +25,25 @@
 - Added error prevention if month is out of range (unsafe indexing)
 - Added silent error prevention after hijriah date conversion
 
+## v0.4.0 - April 09, 2026
+--------------------------
+
+- Fixed wrong conversion in the to_hijri() date is off by years due to the incorrect epoch calculations
+- Prevent key would possibly equals to 0 in the month indexing
+- Patch unit test so it can conform with the latest bugfixes
+
+## v0.5.0 - June 21, 2026
+-------------------------
+
+- Fixed to_gregorian() infinite loop bug (was calling itself recursively)
+- Fixed hijri day range guard (day must be 1-30)
+- Fixed and expanded example.py with comprehensive usage examples
+- Fixed missing dependencies by added python-dateutil to project dependencies
+- Added custom exception hierarchy (HijriDateError, HijriFormatError, HijriRangeError)
+- Added __repr__() and __eq__() methods to Hijriah
+- Added _julian_to_gregorian() static method (Fliegel & Van Flandern algorithm)
+- Replaced generic exceptions with custom exception classes
+- Expanded test coverage with 5 new tests for to_gregorian path
+- Update README usage examples and added to_gregorian warning admonition
+- Removed unused and unnecessary setup.cfg
+- Removed stale version.py (version now in pyproject.toml)
