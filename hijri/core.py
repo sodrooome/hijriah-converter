@@ -1,4 +1,5 @@
 import math
+from hijri.errors import HijriFormatError, HijriRangeError, HijriDateError
 from hijri.constant import ummalqura, hijri_month
 
 
@@ -8,8 +9,16 @@ class Hijriah:
         self.month = month
         self.year = year
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.day}/{self.month}/{self.year}"
+
+    def __repr__(self) -> str:
+        return f"Hijriah(day={self.day}, month={self.month}, year={self.year})" # pragma: no cover
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Hijriah):
+            raise NotImplementedError
+        return (self.day, self.month, self.year) == (other.day, other.month, other.year)
 
     @classmethod
     def to_representation(cls, day, month, year, date_format: str) -> str:
@@ -21,13 +30,21 @@ class Hijriah:
         _day = int(day)
 
         if date_format == "ISO":
+            # ISO 8601 date ordering as an object like: yyyy-dd-mm semantics,
+            # kept as Hijriah instance for further implementation
             return cls(_day, _month, _year)
         elif date_format == "DMY":
+            # DMY format previously was identical to the ISO branch format
+            # even though they are conceptually within different format.
+            # What actually distinguishes here, is the string representation
+            # we return a Hijriah object which __str__ already renders
+            # with the "day/month/year", in order to avoid deduplication
+            # of ISO branch date format.
             return cls(_day, _month, _year)
         elif date_format == "ISO-8601":
             return f"{_year:04d}-{_month:02d}-{_day:02d}"
         else:
-            raise Exception("Unknown formatter date")
+            raise HijriFormatError(f"Unknown date formatter: {date_format}")
 
     def get_hijri_month(self):
         """Method for formatted both calendar and returned as
@@ -84,12 +101,12 @@ class Hijriah:
                 break
 
         if key is None:
-            raise ValueError("Date is out of range for calendar conversion")
+            raise HijriRangeError("Date is out of range for calendar conversion")
 
         # guard the result if it's equal to 0 which indexed
         # last element of array
         if key == 0:
-            raise ValueError("Date before supported range for calendar conversion")
+            raise HijriRangeError("Date before supported range for calendar conversion")
 
         # calculate the Umm al-Qura calendar
         month_index = key - 1
@@ -97,9 +114,16 @@ class Hijriah:
         # total months since 1 Muharram 1343 AH (starting point from this lbirary)
         total_months = month_index
         hijri_year = 1343 + (total_months // 12)
-        hijri_month = (total_months % 12) + 1
+        hijri_month_number = (total_months % 12) + 1
         hijri_day = reduced_julien_day - ummalqura[month_index] + 1
-        result = Hijriah(day=hijri_day, month=hijri_month, year=hijri_year)
+
+        # guard hijriah day into explicit range instead of relying on tuple comparison
+        if not 1 <= hijri_day <= 30:
+            raise HijriRangeError(
+                "Computed Hijriah day is out of valid range. Indicates indexing issue"
+            )
+
+        result = Hijriah(day=hijri_day, month=hijri_month_number, year=hijri_year)
 
         # validate the resulting hijri date to prevent
         # silent OverflowErrorw when date is exceeded
@@ -134,15 +158,60 @@ class Hijriah:
         modified_julien = in_day + ummalqura[index - 1] - 1
         julien_calendar_day = modified_julien + 2400000
 
-        # TODO: this will causing an infinite loops bug
-        return self.to_gregorian(julien_calendar_day)
+        return self._julian_to_gregorian(day=julien_calendar_day)
 
-    def to_julien(self):
-        # TODO: convert the gregorian calendar into julien calendar
-        raise NotImplementedError("This function is not being implemented yet")
+    @staticmethod
+    def _julian_to_gregorian(day: int):
+        """Convert a Julian day number to a Gregorian calendar date
+        using the standard conversion (fliegel & van flandern).
+        """
 
-    # future notes: override base exception and create
-    # custom exception for this validation
+        # references: https://ui.adsabs.harvard.edu/scan/manifest/1983IAPPP..13...16F
+
+        # shift epoch so days count up from a fixed reference
+        # point to Gregorian calendar. This is a trick that pushes
+        # from leap day (29 February) to the last day of the year
+        days_since_epochs = day + 32044
+
+        # count completed 480 years Gregorian cycles. However,
+        # since every fourth year is a leap year, then it's not
+        # divisible by 400. So, 146097 is where the exact numbers
+        # of days in the 400 Gregorian years with leap days
+        completed_years = (4 * days_since_epochs + 3) // 146097
+        days_within_400_years = days_since_epochs - (146097 * completed_years) // 4
+
+        completed_four_years = (4 * days_within_400_years + 3) // 146097
+
+        # days remain after removing those 400 years cycle
+        days_within_400_years_cycle = (
+            days_since_epochs - (146097 * completed_four_years) // 4
+        )
+
+        # this is a building blocks for leap year calculation
+        completed_four_years_cycle = (4 * days_within_400_years_cycle + 3) // 1461
+
+        # days remain after removing those 4 years cycle
+        days_within_4_years_cycle = (
+            days_within_400_years_cycle - (14601 * completed_four_years_cycle) // 4
+        )
+
+        march_based_index = (5 * days_within_4_years_cycle + 2) // 153
+        _day = (days_within_4_years_cycle - (153 * march_based_index + 2) // 5) + 1
+
+        # convert march based index back to the gregorian calendar,
+        # the previous logic was runs 0..11 starting at March, so adding
+        # 3 will realigns to the calendar months again
+        month = march_based_index + 3 - 12 * (march_based_index // 10)
+
+        # reconstruct overall calendar year
+        year = (
+            100 * completed_years
+            + completed_four_years_cycle
+            - 4800
+            + (march_based_index // 10)
+        )
+        return Hijriah(day=_day, month=month, year=year)
+
     def validate_calendar(self):
         """Method for date validation."""
         if (
@@ -150,19 +219,19 @@ class Hijriah:
             or self.month in ("", None)
             or self.year in ("", None)
         ):
-            raise ValueError("Calendar fields can't be empty")
+            raise HijriDateError("Calendar fields can't be empty")
         return True
 
-    def validate_hijri_range(self):
+    def validate_hijri_range(self) -> None:
         offset_date = (1343, 1, 1)
         limit_date = (1500, 12, 30)
         check_date = (self.year, self.month, self.day)
         if not offset_date <= check_date <= limit_date:
-            raise OverflowError("Hijriah date out of range / bounds")
+            raise HijriRangeError("Hijriah date out of range / bounds")
 
-    def validate_gregorian_range(self):
+    def validate_gregorian_range(self) -> None:
         offset_date = (1900, 1, 1)
         limit_date = (2100, 12, 31)
         check_Date = (self.year, self.month, self.day)
         if not offset_date <= check_Date <= limit_date:
-            raise OverflowError("Gregorian calendar date out of range / bounds")
+            raise HijriRangeError("Gregorian calendar date out of range / bounds")
