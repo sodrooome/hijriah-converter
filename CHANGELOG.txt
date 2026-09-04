@@ -47,3 +47,14 @@
 - Update README usage examples and added to_gregorian warning admonition
 - Removed unused and unnecessary setup.cfg
 - Removed stale version.py (version now in pyproject.toml)
+
+## v0.6.0 - September 2, 2026
+-----------------------------
+
+- Fixed _julian_to_gregorian() wrong divisors/typo'd constants that made to_gregorian() return garbage dates
+- Fixed to_gregorian() lunation-index offset pointing at the wrong hijri month entirely
+- Fixed __eq__() raising NotImplementedError instead of returning NotImplemented for non-Hijriah operands
+- Fixed range validators accepting invalid month/day values as long as the year was in range
+- Fixed to_gregorian() raising a raw IndexError instead of HijriRangeError for out-of-range hijri dates
+- Added to_gregorian() usage example to README
+- Added regression tests for all of the above
