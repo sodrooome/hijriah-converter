@@ -13,11 +13,11 @@ class Hijriah:
         return f"{self.day}/{self.month}/{self.year}"
 
     def __repr__(self) -> str:
-        return f"Hijriah(day={self.day}, month={self.month}, year={self.year})" # pragma: no cover
+        return f"Hijriah(day={self.day}, month={self.month}, year={self.year})"  # pragma: no cover
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Hijriah):
-            raise NotImplementedError
+            return NotImplemented
         return (self.day, self.month, self.year) == (other.day, other.month, other.year)
 
     @classmethod
@@ -133,25 +133,25 @@ class Hijriah:
     def to_gregorian(self):
         """Function for converting hijriah calendar day,
         to Gregorian calendar day.
-
-        Work in progress, needs to be converted into
-        julien calendar day cause the outcome is the index
-        out of range
         """
         _day = int(self.day)
         _month = int(self.month)
         _year = int(self.year)
 
-        # validation for gregorian calendar
-        if not self.validate_calendar():
-            return False
+        # validation for hijri calendar input range, before it's used
+        # to index into the ummalqura lunation table
+        self.validate_calendar()
+        self.validate_hijri_range()
 
         in_year = _year
         in_month = _month
         in_day = _day
         in_one_year = in_year - 1
         lunation = (in_one_year * 12) + 1 + (in_month - 1)
-        index = lunation - 16260
+
+        # 16104 aligns this lunation count with to_hijri()'s own month_index
+        # base (1343 AH epoch); was 16260, which pointed at the wrong month
+        index = lunation - 16104
 
         # indexing the modified julien calendar day,
         # and calculate the result
@@ -180,19 +180,12 @@ class Hijriah:
         completed_years = (4 * days_since_epochs + 3) // 146097
         days_within_400_years = days_since_epochs - (146097 * completed_years) // 4
 
-        completed_four_years = (4 * days_within_400_years + 3) // 146097
-
-        # days remain after removing those 400 years cycle
-        days_within_400_years_cycle = (
-            days_since_epochs - (146097 * completed_four_years) // 4
-        )
-
         # this is a building blocks for leap year calculation
-        completed_four_years_cycle = (4 * days_within_400_years_cycle + 3) // 1461
+        completed_four_years_cycle = (4 * days_within_400_years + 3) // 1461
 
         # days remain after removing those 4 years cycle
         days_within_4_years_cycle = (
-            days_within_400_years_cycle - (14601 * completed_four_years_cycle) // 4
+            days_within_400_years - (1461 * completed_four_years_cycle) // 4
         )
 
         march_based_index = (5 * days_within_4_years_cycle + 2) // 153
@@ -223,6 +216,13 @@ class Hijriah:
         return True
 
     def validate_hijri_range(self) -> None:
+        # coarse day bound (1-30), not a real per-month calendar
+        # check tighten if a month with fewer days needs to be rejected
+        if not 1 <= self.month <= 12:
+            raise HijriRangeError("Hijriah month must be between 1 and 12")
+        if not 1 <= self.day <= 30:
+            raise HijriRangeError("Hijriah day must be between 1 and 30")
+
         offset_date = (1343, 1, 1)
         limit_date = (1500, 12, 30)
         check_date = (self.year, self.month, self.day)
@@ -230,8 +230,15 @@ class Hijriah:
             raise HijriRangeError("Hijriah date out of range / bounds")
 
     def validate_gregorian_range(self) -> None:
+        # coarse day bound (1-31), not a real per-month calendar
+        # check tighten if e.g. day=31 in April needs to be rejected
+        if not 1 <= self.month <= 12:
+            raise HijriRangeError("Gregorian month must be between 1 and 12")
+        if not 1 <= self.day <= 31:
+            raise HijriRangeError("Gregorian day must be between 1 and 31")
+
         offset_date = (1900, 1, 1)
         limit_date = (2100, 12, 31)
-        check_Date = (self.year, self.month, self.day)
-        if not offset_date <= check_Date <= limit_date:
+        check_date = (self.year, self.month, self.day)
+        if not offset_date <= check_date <= limit_date:
             raise HijriRangeError("Gregorian calendar date out of range / bounds")

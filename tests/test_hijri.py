@@ -174,6 +174,63 @@ class TestHijriCalendar(unittest.TestCase):
         self.assertTrue(hasattr(result, "month"))
         self.assertTrue(hasattr(result, "year"))
 
+    def test_julian_to_gregorian_correct_value(self):
+        """Regression test: JD 2451677 must resolve to 12 May 2000.
+        Previously wrong divisors/typo'd constants made this arithmetic
+        return nonsense dates."""
+        result = Hijriah._julian_to_gregorian(2451677)
+        self.assertEqual((result.day, result.month, result.year), (12, 5, 2000))
+
+    def test_to_gregorian_round_trip_matches_original(self):
+        """Regression test: gregorian -> hijri -> gregorian must return
+        to the original date, not garbage. Also covers the lunation-index
+        offset bug (was 16260, pointed at the wrong month entirely)."""
+        original = Hijriah(21, 12, 2012)
+        result = original.to_hijri().to_gregorian()
+        self.assertEqual(result, original)
+
+    def test_to_gregorian_matches_to_hijri_month_index(self):
+        """Regression test: to_gregorian's lunation offset must line up
+        with the same month_index base to_hijri() uses (1343 AH epoch)."""
+        result = Hijriah(8, 2, 1434).to_gregorian()
+        self.assertEqual((result.day, result.month, result.year), (21, 12, 2012))
+
+    def test_eq_with_non_hijriah_returns_false(self):
+        """Regression test: comparing against a non-Hijriah value must
+        evaluate to False instead of raising NotImplementedError."""
+        self.assertFalse(self.hijri == "21/12/2012")
+        self.assertFalse(self.hijri == None)
+        self.assertNotEqual(self.hijri, 42)
+
+    def test_validate_gregorian_range_invalid_month(self):
+        """Regression test: an in-range year must not mask an invalid
+        month (tuple comparison alone let month=13 through)."""
+        hijri_invalid = Hijriah(15, 13, 1950)
+        with self.assertRaises(HijriRangeError):
+            hijri_invalid.validate_gregorian_range()
+
+    def test_validate_gregorian_range_invalid_day(self):
+        """Regression test: day out of 1-31 must be rejected even when
+        year/month are in range."""
+        hijri_invalid = Hijriah(0, 6, 1950)
+        with self.assertRaises(HijriRangeError):
+            hijri_invalid.validate_gregorian_range()
+
+    def test_validate_hijri_range_invalid_month(self):
+        """Regression test: month out of 1-12 must be rejected even when
+        year is in range."""
+        hijri_invalid = Hijriah(15, 13, 1400)
+        with self.assertRaises(HijriRangeError):
+            hijri_invalid.validate_hijri_range()
+
+    def test_to_gregorian_out_of_range_raises_range_error(self):
+        """Regression test: to_gregorian() must reject an out-of-range
+        hijri date with HijriRangeError instead of a raw IndexError
+        from indexing the ummalqura table."""
+        hijri_invalid = Hijriah(1, 1, 9999)
+        with self.assertRaises(HijriRangeError):
+            hijri_invalid.to_gregorian()
+
 
 if __name__ == "__main__":
     unittest.main()  # pragma: no cover

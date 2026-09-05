@@ -31,6 +31,11 @@ from hijri.core import Hijriah
 >>> print(hijri.get_hijri_month())
 Dzul Hijjah
 
+# convert hijri calendar day into gregorian
+>>> hijri = Hijriah(day=8, month=2, year=1434)
+>>> print(hijri.to_gregorian())
+21/12/2012
+
 # convert into standard ISO date format (returns Hijriah object)
 >>> get_iso = Hijriah.to_representation(day=21, month=12, year=2024, date_format="ISO")
 >>> print(get_iso)
@@ -49,9 +54,6 @@ Dzul Hijjah
 
 For further usage, please refer to the `example.py` file
 
-> [!WARNING]
-> The `to_gregorian()` method (converting Hijri to Gregorian) is still a work in progress and may return incorrect results.
-
 #### Acknowledgment
 
 For the calculation formula itself i adopted from several resources and packages, especially with these two, [Python Islamic Library](https://github.com/abougouffa/pyIslam) and [Hijri.js](https://github.com/xsoh/Hijri.js)
@@ -60,6 +62,6 @@ For the calculation formula itself i adopted from several resources and packages
 
 For accuracy itself, to be honest i don't really know how accurate it is for calendar conversion. For example, if we inputted the current date (from 2021), the conversion result to the hijri year is 1455 which is actually wrong. After some research, there is a leap day in the Hijri calendar which will increase every 2 or 3 years and there are also 11 leap years in a 30-year cycle. Their distribution varies slightly from one country or Muslim community to another.
 
-In addition to the leap days that inserted in solar calendars like the Gregorian calendar or Julien Calendar, the Hijriah leap day is not designed to align the calendar with the solar year, which on average lasts just over 365 days.
+In addition to the leap days that are inserted in solar calendars like the Gregorian calendar or Julien Calendar, the Hijriah leap day is not designed to align the calendar with the solar year, which on average lasts just over 365 days.
 
-Furthermore, this makes the calculation of the months in Hijriah calendar is difficult to predict / compute. For example, bad weather conditions may delay the beginning of a new month by one day at short notice.
+Furthermore, this makes the calculation of the months in the Hijriah calendar difficult to predict. For example, bad weather conditions may delay the beginning of a new month by one day at short notice.
